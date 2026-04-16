@@ -32,10 +32,10 @@ Then stop.
 ## Step 3: Identity
 
 Ask: "What's your name?"
-Store as CEO_NAME.
+Store as `{{CEO_NAME}}`.
 
 Ask: "What's the company called?"
-Store as COMPANY_NAME.
+Store as `{{COMPANY_NAME}}`.
 
 ## Step 4: Active projects
 
@@ -49,7 +49,7 @@ Take their free-form answer. Format it as a markdown table:
 | [name]  | [description] |
 ```
 
-Store as ACTIVE_PROJECTS_TABLE.
+Store as `{{ACTIVE_PROJECTS_TABLE}}`.
 
 Confirm: "Got it — [summary of what they said]. Does that look right?"
 
@@ -57,8 +57,8 @@ Confirm: "Got it — [summary of what they said]. Does that look right?"
 
 Ask: "When you ask me something, would you prefer bullet points or flowing prose?"
 
-If bullet points: set COMM_STYLE = `Bullet points preferred. Be direct. Skip preamble.`
-If prose: set COMM_STYLE = `Flowing prose preferred. Conversational tone.`
+If bullet points: set `{{COMM_STYLE}}` = `Bullet points preferred. Be direct. Skip preamble.`
+If prose: set `{{COMM_STYLE}}` = `Flowing prose preferred. Conversational tone.`
 
 ## Step 6: MCPs
 
@@ -71,27 +71,27 @@ If yes: run the install command. If no or skip: move on.
 ```bash
 claude mcp add notion --yes 2>/dev/null && echo "NOTION_OK" || echo "NOTION_FAIL"
 ```
-If NOTION_OK: add `- Notion (connected)` to MCP_INTEGRATIONS_LIST.
+If NOTION_OK: add `- Notion (connected)` to `{{MCP_INTEGRATIONS_LIST}}`.
 
 **Slack:**
 ```bash
 claude mcp add slack --yes 2>/dev/null && echo "SLACK_OK" || echo "SLACK_FAIL"
 ```
-If SLACK_OK: add `- Slack (connected)` to MCP_INTEGRATIONS_LIST.
+If SLACK_OK: add `- Slack (connected)` to `{{MCP_INTEGRATIONS_LIST}}`.
 
 **Google Calendar:**
 ```bash
 claude mcp add google-calendar --yes 2>/dev/null && echo "GCAL_OK" || echo "GCAL_FAIL"
 ```
-If GCAL_OK: add `- Google Calendar (connected)` to MCP_INTEGRATIONS_LIST.
+If GCAL_OK: add `- Google Calendar (connected)` to `{{MCP_INTEGRATIONS_LIST}}`.
 
 **Gmail:**
 ```bash
 claude mcp add gmail --yes 2>/dev/null && echo "GMAIL_OK" || echo "GMAIL_FAIL"
 ```
-If GMAIL_OK: add `- Gmail (connected)` to MCP_INTEGRATIONS_LIST.
+If GMAIL_OK: add `- Gmail (connected)` to `{{MCP_INTEGRATIONS_LIST}}`.
 
-If any install fails, say: "[Tool] couldn't connect automatically. You can add it later — just let Jeremy know."
+If any install fails, say: "[Tool] couldn't connect automatically. You can add it manually later — search `claude mcp add [tool-name]` or ask for help."
 
 ## Step 7: Detect machine spec
 
@@ -100,7 +100,7 @@ Run:
 system_profiler SPHardwareDataType 2>/dev/null | grep -E "Model Name|Chip|Memory" | head -3
 ```
 
-Set MACHINE_SPEC to the output summary (e.g., "M4 Mac mini, 64GB").
+Set `{{MACHINE_SPEC}}` to the output summary (e.g., "M4 Mac mini, 64GB").
 
 ## Step 8: Write CLAUDE.md
 
@@ -108,6 +108,13 @@ Set remaining placeholders:
 - ONBOARD_DATE = today's date (YYYY-MM-DD format)
 - VAULT_PATH = `~/Documents/[COMPANY_NAME] Brain/` (will be confirmed in /setup-memory)
 - KG_PATH = `~/knowledge-graph/` (will be confirmed in /setup-memory)
+
+First, verify the plugin path is available:
+```bash
+echo "${CLAUDE_PLUGIN_ROOT:-UNSET}"
+```
+
+If the output is `UNSET`, say: "It looks like this plugin wasn't installed via `claude plugin install`. Please reinstall it: `claude plugin install github:jeremyshank/ceo-claude-setup`" — then stop.
 
 Read the template at `${CLAUDE_PLUGIN_ROOT}/templates/CLAUDE.md.template`.
 Replace all {{PLACEHOLDER}} tokens with the collected values.

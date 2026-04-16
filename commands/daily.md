@@ -31,8 +31,8 @@ If no events: note "Clear calendar".
 ## Step 3: Slack
 
 If Slack MCP is connected:
-- Get unread mentions across all channels
-- Get any messages in channels the user has starred or frequently uses
+- Search for messages mentioning the user in the last 48 hours using the Slack search tool
+- If search fails or returns nothing, check the 3 most recently active channels for new messages
 - Summarize: who needs a response, what decisions are pending
 
 If Slack not connected: skip silently.
@@ -67,6 +67,8 @@ NOTION
 ## Step 6: Educational tail
 
 After the briefing, on a new line, say ONE of these (rotate based on what seems most relevant today):
+
+Use Option A on odd calendar days (1st, 3rd, 5th...), Option B on even calendar days:
 
 Option A (cron scheduling):
 > *This is a skill — a text file with instructions I follow. You could schedule it as a cron job so it runs automatically at 8am without you typing anything. Want to set that up?*

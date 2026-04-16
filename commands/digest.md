@@ -31,6 +31,9 @@ If no input provided, ask: "What do you want me to digest? Drop a Slack channel 
 **If pasted text:**
 - Use as-is
 
+**If a short bare word or phrase (no URL, no #, no paragraph):**
+Ask: "Is `[word]` a Slack channel name, or did you want to paste some content? Just clarify and I'll continue."
+
 ## Step 3: Summarize
 
 Produce exactly:
