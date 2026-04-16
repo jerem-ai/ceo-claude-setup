@@ -8,7 +8,7 @@ INPUT=$(cat)
 TODAY=$(date '+%Y-%m-%d')
 CWD=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('cwd','unknown'))" 2>/dev/null || echo "unknown")
 PROJECT=$(basename "$CWD")
-DURATION_SEC=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('duration_seconds',0))" 2>/dev/null || echo "0")
+DURATION_SEC=$(echo "$INPUT" | python3 -c "import sys,json; d=json.load(sys.stdin); print(int(d.get('duration_seconds',0)))" 2>/dev/null || echo "0")
 DURATION_MIN=$(( DURATION_SEC / 60 ))
 
 # Only log sessions longer than 2 minutes
@@ -20,7 +20,7 @@ fi
 CONFIG_FILE="$HOME/.config/ceo-claude-setup/config.json"
 VAULT_PATH=""
 if [ -f "$CONFIG_FILE" ]; then
-  VAULT_PATH=$(python3 -c "import json; d=json.load(open('$CONFIG_FILE')); print(d.get('vault_path',''))" 2>/dev/null)
+  VAULT_PATH=$(python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('vault_path',''))" < "$CONFIG_FILE" 2>/dev/null)
 fi
 
 if [ -z "$VAULT_PATH" ]; then
@@ -34,10 +34,10 @@ if find "$SESSIONS_DIR" -maxdepth 1 -name "${TODAY}-${PROJECT}-*.md" 2>/dev/null
   exit 0
 fi
 
-mkdir -p "$SESSIONS_DIR"
+mkdir -p "$SESSIONS_DIR" 2>/dev/null || exit 0
 STUB_FILE="$SESSIONS_DIR/${TODAY}-${PROJECT}-session-stub.md"
 
-cat > "$STUB_FILE" << STUB
+cat > "$STUB_FILE" 2>/dev/null << CEO_SESSION_STUB_END
 ---
 date: $TODAY
 project: $PROJECT
@@ -48,6 +48,6 @@ duration_minutes: $DURATION_MIN
 # Session Stub: $PROJECT ($TODAY)
 
 Auto-generated. Duration: ${DURATION_MIN} min. Directory: $CWD
-STUB
+CEO_SESSION_STUB_END
 
 exit 0
