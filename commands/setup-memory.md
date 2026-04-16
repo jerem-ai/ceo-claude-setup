@@ -515,8 +515,11 @@ done
 # Enable plugin
 python3.12 -c "
 import json
-with open('${COMMUNITY_JSON}') as f:
-    plugins = json.load(f)
+try:
+    with open('${COMMUNITY_JSON}') as f:
+        plugins = json.load(f)
+except FileNotFoundError:
+    plugins = []
 if 'auto-note-mover' not in plugins:
     plugins.append('auto-note-mover')
 with open('${COMMUNITY_JSON}', 'w') as f:
@@ -554,7 +557,7 @@ Write the Auto Note Mover config at `$PLUGINS_DIR/auto-note-mover/data.json`:
 
 ```bash
 mkdir -p ~/.config/topic-linker
-cat > ~/.config/topic-linker/config.json << 'CONF'
+cat > ~/.config/topic-linker/config.json << CONF
 {
   "schema_version": 1,
   "vault_path": "${VAULT_PATH}",
@@ -1373,7 +1376,6 @@ Expected: packages installed, no errors.
 ### 3. Set vault path in shell profile
 
 ```bash
-VAULT_PATH_ESCAPED=$(echo "${VAULT_PATH}" | sed 's/ /\\ /g')
 echo "export KG_VAULT_PATH=\"${VAULT_PATH}\"" >> ~/.zshrc
 echo "export KG_DATA_DIR=\"$HOME/.local/share/knowledge-graph\"" >> ~/.zshrc
 export KG_VAULT_PATH="${VAULT_PATH}"
@@ -1382,12 +1384,12 @@ export KG_DATA_DIR="$HOME/.local/share/knowledge-graph"
 
 ### 4. Run first index
 
+This downloads a ~22MB model on first run. Takes 2-3 minutes. Say BEFORE running: "Indexing your vault — this takes a couple of minutes on first run. I'll let you know when it's done."
+
 ```bash
 cd ~/knowledge-graph
 npm run cli -- index
 ```
-
-This downloads a ~22MB model on first run. Takes 2-3 minutes. Say: "Indexing your vault — this takes a couple of minutes on first run. I'll let you know when it's done."
 
 When done: expected output includes "Indexed N notes".
 
@@ -1395,14 +1397,15 @@ When done: expected output includes "Indexed N notes".
 
 ```bash
 mkdir -p ~/.config/ceo-claude-setup
-python3.12 -c "
+CEO_VAULT_PATH="${VAULT_PATH}" python3.12 -c "
 import json, os
+vault = os.environ['CEO_VAULT_PATH']
 config_path = os.path.expanduser('~/.config/ceo-claude-setup/config.json')
 config = {}
 if os.path.exists(config_path):
     with open(config_path) as f:
         config = json.load(f)
-config['vault_path'] = '${VAULT_PATH}'
+config['vault_path'] = vault
 with open(config_path, 'w') as f:
     json.dump(config, f, indent=2)
 print('CONFIG_WRITTEN')
@@ -1413,8 +1416,9 @@ print('CONFIG_WRITTEN')
 
 ```bash
 cd ~/knowledge-graph
-npm run cli -- search "$(python3.12 -c "import json,os; d=json.load(open(os.path.expanduser('~/.config/ceo-claude-setup/config.json'))); print(list(d.keys())[0] if d else 'company')")"
+npm run cli -- search "[COMPANY_NAME]"
 ```
+(Claude: substitute [COMPANY_NAME] with the actual company name collected in the pre-flight step)
 
 If results return: "Knowledge graph ready"
 If error: "Knowledge graph indexed but search test failed — it may need a moment to finish indexing. Try `npm run cli -- search [your company name]` in a few minutes."
@@ -1450,7 +1454,7 @@ launchctl list | grep vault-health
 cat ~/.config/topic-linker/config.json | python3.12 -c "import json,sys; d=json.load(sys.stdin); print('CONFIG_OK' if d.get('vault_path') else 'CONFIG_EMPTY')"
 
 # Hooks
-python3.12 -c "import json; s=json.load(open(os.path.expanduser('~/.claude/settings.json'))); h=s.get('hooks',{}); print('SessionEnd:', 'OK' if 'SessionEnd' in h else 'MISSING'); print('SessionStart:', 'OK' if 'SessionStart' in h else 'MISSING'); print('PreCompact:', 'OK' if 'PreCompact' in h else 'MISSING')" 2>/dev/null
+python3.12 -c "import json, os; s=json.load(open(os.path.expanduser('~/.claude/settings.json'))); h=s.get('hooks',{}); print('SessionEnd:', 'OK' if 'SessionEnd' in h else 'MISSING'); print('SessionStart:', 'OK' if 'SessionStart' in h else 'MISSING'); print('PreCompact:', 'OK' if 'PreCompact' in h else 'MISSING')" 2>/dev/null
 
 # MCP servers
 claude mcp list | grep -i "obsidian\|smart"
